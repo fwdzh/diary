@@ -1,6 +1,5 @@
-name: Hexo Build & Deploy
+name: Hexo Build & Deploy (gh-pages)
 
-# 触发条件：只要 main 分支有 push，就开始执行
 on:
   push:
     branches:
@@ -8,7 +7,6 @@ on:
 
 jobs:
   build-deploy:
-    # 在 GitHub 提供的最新 Ubuntu 环境上跑
     runs-on: ubuntu-latest
 
     steps:
@@ -16,13 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ 安装 Node.js（Hexo 依赖）
+      # 2️⃣ 安装 Node.js（稳定用 20，别用 25）
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "25"
+          node-version: "20"
 
-      # 3️⃣ 安装依赖（Hexo 主题、插件）
+      # 3️⃣ 安装依赖
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
@@ -30,23 +28,10 @@ jobs:
       - name: Generate static files
         run: npm run build
 
-      # 5️⃣ 上传生成好的 public 文件夹
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+      # 5️⃣ 部署到 gh-pages 分支
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: ./public
-
-  deploy:
-    # 等 build-deploy 完成后再跑
-    needs: build-deploy
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-    runs-on: ubuntu-latest
-    steps:
-      # 6️⃣ 真正发布到 GitHub Pages
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
