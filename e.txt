@@ -1,2 +1,0 @@
-INFO  Validating config
-INFO  Start processing
